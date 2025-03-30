@@ -13,7 +13,7 @@ import { OPERATION_DATA_KEY } from '../../lib/operationData'
 import OAJSONEditor from '../Common/OAJSONEditor.vue'
 import OAPlaygroundParameterInput from '../Playground/OAPlaygroundParameterInput.vue'
 import OAPlaygroundSecurityInput from '../Playground/OAPlaygroundSecurityInput.vue'
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
+import { Select } from '../ui/select'
 import SelectWithCustomOption from '../ui/select-with-custom-option/SelectWithCustomOption.vue'
 
 const props = defineProps({
@@ -74,12 +74,17 @@ const queryParameters = props.parameters.filter(parameter => parameter && parame
 
 const servers = computed(() => props.servers as OpenAPIV3.ServerObject[])
 
-const serversUrls: ComputedRef<string[]> = computed(() =>
+const serversUrls: ComputedRef<{ label: string, value: string }[]> = computed(() =>
   servers
     .value
-    .map(server => server.url)
-    .filter((value, index, self) => self.indexOf(value) === index) // Remove duplicates.
-    .filter(value => value !== undefined),
+    .map(server => ({
+      label: String(server.url),
+      value: String(server.url),
+    }))
+    // Remove duplicates:
+    .filter((server, index, self) =>
+      index === self.findIndex(s => s.value === server.value),
+    ),
 )
 
 const selectedServer = computed({
@@ -116,6 +121,17 @@ const authorizations = ref<PlaygroundSecurityScheme[]>([])
 const body = ref(Object.keys(props.examples ?? {}).length ? Object.values(props.examples ?? {})[0].value : null)
 
 const bodyType = computed(() => typeof body.value === 'object' ? 'json' : 'text')
+
+const securityOptions = computed(() => {
+  if (!props.securityUi) {
+    return []
+  }
+
+  return props.securityUi.map((item: SecurityUiItem) => ({
+    value: item.id,
+    label: item.id,
+  }))
+})
 
 function setAuthorizations(schemes: Record<string, PlaygroundSecurityScheme>) {
   if (!schemes || !Object.keys(schemes).length) {
@@ -194,26 +210,10 @@ watch(operationData.security.selectedSchemeId, () => {
         <div v-if="props.securityUi.length > 1" class="w-full max-w-[33%] md:max-w-[50%] ml-auto -mt-8">
           <Select
             :model-value="operationData.security.selectedSchemeId.value"
-            @update:model-value="operationData.security.selectedSchemeId.value = $event"
-          >
-            <SelectTrigger
-              aria-label="Security Scheme"
-              class="h-9 px-3 py-1.5 text-foreground font-normal"
-            >
-              <SelectValue :placeholder="operationData.security.selectedSchemeId.value ?? $t('Select...')" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem
-                  v-for="item in props.securityUi"
-                  :key="item.id"
-                  :value="item.id"
-                >
-                  {{ item.id }}
-                </SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+            class="h-9 px-3 py-1.5 text-foreground font-normal"
+            :options="securityOptions"
+            @update:model-value="operationData.security.selectedSchemeId.value = String($event)"
+          />
         </div>
       </summary>
 

@@ -173,3 +173,29 @@
 .VPDoc:not(.has-aside) .OAPathContentEnd {
   @apply sm:px-6;
 }
+
+/**
+  DaisyUI overrides
+ */
+.daisy-btn.daisy-no-animation {
+  animation: none !important;
+}
+.daisy-btn.daisy-no-animation:active:focus {
+  animation: none !important;
+  transform: none !important;
+}
+
+.daisy-collapse-title, :where(.daisy-collapse > input[type="checkbox"]), :where(.daisy-collapse > input[type="radio"]) {
+  min-height: 0 !important;
+}
+
+.daisy-label {
+  user-select: text !important;
+  cursor: text !important;
+}
+
+/** allow user text select in daisy collapse */
+input[type="checkbox"].allow-select {
+  user-select: text !important;
+  cursor: text !important;
+}

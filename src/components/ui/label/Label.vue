@@ -1,29 +1,53 @@
+<!-- Label.vue -->
 <script setup lang="ts">
-import type { LabelProps } from 'radix-vue'
-import type { HTMLAttributes } from 'vue'
-import { Label } from 'radix-vue'
-import { computed } from 'vue'
+import { cva } from 'class-variance-authority'
 import { cn } from '../../../lib/utils'
 
-const props = defineProps<LabelProps & { class?: HTMLAttributes['class'] }>()
+interface LabelProps {
+  for?: string
+  required?: boolean
+  disabled?: boolean
+  class?: string
+}
 
-const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
+const props = withDefaults(defineProps<LabelProps>(), {
+  required: false,
+  disabled: false,
+})
 
-  return delegated
+const labelClasses = cva([
+  'daisy-label',
+  'text-sm font-medium leading-none',
+  'peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
+], {
+  variants: {
+    disabled: {
+      true: 'cursor-not-allowed opacity-70',
+      false: '',
+    },
+    required: {
+      true: 'after:content-["*"] after:text-red-500 after:ml-0.5',
+      false: '',
+    },
+  },
+  defaultVariants: {
+    disabled: false,
+    required: false,
+  },
 })
 </script>
 
 <template>
-  <Label
-    v-bind="delegatedProps"
-    :class="
-      cn(
-        'text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
-        props.class,
-      )
-    "
+  <label
+    :for="props.for"
+    :class="cn(
+      labelClasses({
+        disabled: props.disabled,
+        required: props.required,
+      }),
+      props.class,
+    )"
   >
     <slot />
-  </Label>
+  </label>
 </template>

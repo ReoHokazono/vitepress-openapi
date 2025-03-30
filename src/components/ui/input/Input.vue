@@ -1,17 +1,37 @@
 <script setup lang="ts">
 import type { HTMLAttributes } from 'vue'
+import type { InputVariants } from './index'
 import { useVModel } from '@vueuse/core'
 import { cn } from '../../../lib/utils'
+import { inputVariants } from './index'
 
-const props = defineProps<{
+interface Props {
   defaultValue?: string | number
   modelValue?: string | number
   class?: HTMLAttributes['class']
   type?: string
-}>()
+  variant?: InputVariants['variant']
+  size?: InputVariants['size']
+  placeholder?: string
+  disabled?: boolean
+  readonly?: boolean
+  required?: boolean
+  id?: string
+  name?: string
+  autocomplete?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  type: 'text',
+  variant: 'default',
+  size: 'default',
+})
 
 const emits = defineEmits<{
   (e: 'update:modelValue', payload: string | number): void
+  (e: 'focus', payload: FocusEvent): void
+  (e: 'blur', payload: FocusEvent): void
+  (e: 'input', payload: Event): void
 }>()
 
 const modelValue = useVModel(props, 'modelValue', emits, {
@@ -22,8 +42,18 @@ const modelValue = useVModel(props, 'modelValue', emits, {
 
 <template>
   <input
+    :id="id"
     v-model="modelValue"
-    :type="props.type ?? 'text'"
-    :class="cn('flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50', props.class)"
+    :type="type"
+    :placeholder="placeholder"
+    :disabled="disabled"
+    :readonly="readonly"
+    :required="required"
+    :name="name"
+    :autocomplete="autocomplete"
+    :class="cn(inputVariants({ variant, size }), props.class)"
+    @focus="emits('focus', $event)"
+    @blur="emits('blur', $event)"
+    @input="emits('input', $event)"
   >
 </template>

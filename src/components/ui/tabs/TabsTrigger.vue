@@ -1,33 +1,58 @@
 <script setup lang="ts">
-import type { TabsTriggerProps } from 'radix-vue'
-import type { HTMLAttributes } from 'vue'
-import type { TabsTriggerVariants } from './index'
-import { TabsTrigger, useForwardProps } from 'radix-vue'
-import { computed } from 'vue'
+import { computed, defineProps, inject, onBeforeUnmount, onMounted, ref } from 'vue'
 import { cn } from '../../../lib/utils'
 import { tabsTriggerVariants } from './index'
 
-interface Props extends TabsTriggerProps {
-  variant?: TabsTriggerVariants['variant']
-  class?: HTMLAttributes['class']
-}
-
-const props = withDefaults(defineProps<Props>(), {})
-
-const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
-
-  return delegated
+const props = defineProps({
+  value: {
+    type: String,
+    required: true,
+  },
+  class: {
+    type: String,
+    default: '',
+  },
+  variant: {
+    type: String,
+    default: 'default',
+  },
 })
 
-const forwardedProps = useForwardProps(delegatedProps)
+const activeTab = inject('activeTab', ref(''))
+const setActiveTab = inject('setActiveTab', (val: string) => {})
+const tabRefs = inject('tabRefs', ref(new Map()))
+
+const el = ref(null)
+
+const isActive = computed(() => activeTab.value === props.value)
+
+function handleClick() {
+  setActiveTab(props.value)
+}
+
+onMounted(() => {
+  if (el.value) {
+    tabRefs.value.set(props.value, el.value)
+  }
+})
+
+onBeforeUnmount(() => {
+  tabRefs.value.delete(props.value)
+})
 </script>
 
 <template>
-  <TabsTrigger
-    v-bind="forwardedProps"
-    :class="cn(tabsTriggerVariants({ variant }), props.class)"
+  <button
+    ref="el"
+    type="button"
+    :class="cn(
+      tabsTriggerVariants({ variant: props.variant }),
+      isActive ? 'daisy-tab-active' : '',
+      props.class,
+    )"
+    :data-state="isActive ? 'active' : 'inactive'"
+    @click="handleClick"
   >
     <slot />
-  </TabsTrigger>
+  </button>
 </template>

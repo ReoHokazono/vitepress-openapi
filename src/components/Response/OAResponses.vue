@@ -1,10 +1,8 @@
 <script setup>
-import { TabsIndicator } from 'radix-vue'
 import { computed, defineProps, ref } from 'vue'
 import { useTheme } from '../../composables/useTheme'
 import OAHeading from '../Common/OAHeading.vue'
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
+import { Tabs, TabsContent, TabsIndicator, TabsList, TabsTrigger, TabsTriggerSelect } from '../ui/tabs'
 import OAResponse from './OAResponse.vue'
 
 const props = defineProps({
@@ -72,33 +70,13 @@ const tabsSelector = computed(() => {
                   </TabsTrigger>
                 </template>
 
-                <Select
+                <TabsTriggerSelect
                   v-if="tabsSelector === 'select'"
-                  v-model="vModel"
-                >
-                  <SelectTrigger
-                    aria-label="Response Code"
-                    class="px-3 py-1.5 text-foreground"
-                  >
-                    <SelectValue>{{ vModel }}</SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <TabsTrigger
-                        v-for="(code, idx) in responsesCodes"
-                        :key="idx"
-                        :value="code"
-                        variant="select"
-                      >
-                        <SelectItem
-                          :value="code"
-                        >
-                          {{ code }}
-                        </SelectItem>
-                      </TabsTrigger>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
+                  :value="vModel"
+                  :options="responsesCodes"
+                  class="daisy-select daisy-select-bordered bg-muted text-foreground"
+                  aria-label="Response Code"
+                />
               </div>
             </TabsList>
           </div>

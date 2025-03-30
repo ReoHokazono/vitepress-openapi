@@ -26,7 +26,7 @@ const { response, loading } = defineProps({
         <Badge
           v-if="response && response.status"
           variant="plain"
-          class="rounded py-1.5"
+          class="py-1.5"
           :class="{
             'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100': String(response.status).startsWith('2'),
             'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100': String(response.status).startsWith('3'),

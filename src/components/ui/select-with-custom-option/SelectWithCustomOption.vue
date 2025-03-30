@@ -3,8 +3,7 @@ import type { WritableComputedRef } from 'vue'
 import type { SelectWithCustomOptionEmits, SelectWithCustomOptionProps } from './index'
 import { useVModel } from '@vueuse/core'
 import { computed, watch } from 'vue'
-import { Input } from '../input'
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '../select'
+import { Select } from '../select'
 
 const props = withDefaults(defineProps<SelectWithCustomOptionProps>(), {
   modelValue: '',
@@ -40,10 +39,14 @@ watch(customValue, (newValue) => {
 const displayOptions = computed(() => {
   return props.allowCustomOption
     ? [...props.options, { label: props.customOptionLabel, value: CUSTOM_VALUE }]
-    : props.options
+    : [props.options]
 })
 
-const handleSelectChange = (selectedValue: string) => {
+const handleSelectChange = (selectedValue?: string) => {
+  if (!selectedValue) {
+    return
+  }
+
   if (selectedValue === CUSTOM_VALUE) {
     isCustom.value = true
     const inputEl: HTMLInputElement | null = document.querySelector('.oa-custom-input input')
@@ -61,34 +64,31 @@ const handleSelectChange = (selectedValue: string) => {
 
 <template>
   <div class="relative w-full h-10">
-    <div v-if="isCustom" class="oa-custom-input absolute inset-0">
-      <Input
+    <div v-if="isCustom" class="oa-custom-input absolute inset-0 z-10 mr-8 h-10">
+      <input
         v-model="customValue"
         :placeholder="customPlaceholder"
-        class="pr-8 bg-muted"
+        class="daisy-input daisy-input-bordered bg-muted h-10 w-full"
         @keydown.enter="emit('submit')"
-      />
+      >
     </div>
 
     <Select
       :model-value="value"
-      class="absolute inset-0"
+      :placeholder="placeholder"
+      :options="displayOptions"
       @update:model-value="handleSelectChange"
     >
-      <SelectTrigger :aria-label="$t('Select...')">
-        <SelectValue :placeholder="placeholder" class="text-start" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectGroup>
-          <SelectItem
-            v-for="option in displayOptions"
-            :key="typeof option === 'object' ? option.value : option"
-            :value="typeof option === 'object' ? option.value : option"
-          >
-            {{ typeof option === 'object' ? option.label : option }}
-          </SelectItem>
-        </SelectGroup>
-      </SelectContent>
+      <!--      <option v-if="!value" value="" disabled selected> -->
+      <!--        {{ placeholder }} -->
+      <!--      </option> -->
+      <!--      <option -->
+      <!--        v-for="option in displayOptions" -->
+      <!--        :key="typeof option === 'object' ? option.value : option" -->
+      <!--        :value="typeof option === 'object' ? option.value : option" -->
+      <!--      > -->
+      <!--        {{ typeof option === 'object' ? option.label : option }} -->
+      <!--      </option> -->
     </Select>
   </div>
 </template>

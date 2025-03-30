@@ -3,7 +3,7 @@ import { computed, defineProps, ref } from 'vue'
 import { useTheme } from '../../composables/useTheme'
 import OASchemaTabs from '../Schema/OASchemaTabs.vue'
 import { Label } from '../ui/label'
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
+import { Select } from '../ui/select'
 
 const props = defineProps({
   operationId: {
@@ -31,6 +31,16 @@ const examples = computed(() => props.response.content?.[contentType.value]?.exa
 const contentTypeId = `content-type-${Math.random().toString(36).substring(7)}`
 
 const defaultView = useTheme().getResponseBodyDefaultView()
+
+const options = contentTypes.map(type => ({
+  value: type,
+  label: type,
+}))
+
+// Función para manejar el cambio de contentType
+const handleContentTypeChange = (value) => {
+  contentType.value = value
+}
 </script>
 
 <template>
@@ -51,26 +61,10 @@ const defaultView = useTheme().getResponseBodyDefaultView()
         <Select
           v-if="contentTypes.length > 1"
           :id="contentTypeId"
-          v-model="contentType"
-        >
-          <SelectTrigger
-            aria-label="Content-Type"
-            class="h-6 text-xs"
-          >
-            <SelectValue>{{ contentType }}</SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem
-                v-for="(type, idx) in contentTypes"
-                :key="idx"
-                :value="type"
-              >
-                {{ type }}
-              </SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
+          :model-value="contentType"
+          :options="options"
+          @update:model-value="handleContentTypeChange"
+        />
         <span v-else class="h-6 text-xs rounded-md bg-muted px-3 py-1">{{ contentType }}</span>
       </div>
     </div>

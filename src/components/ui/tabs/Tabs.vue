@@ -1,16 +1,38 @@
 <script setup lang="ts">
-import type { TabsRootEmits, TabsRootProps } from 'radix-vue'
-import type { ComputedRef } from 'vue'
-import { TabsRoot, useForwardPropsEmits } from 'radix-vue'
+import { defineEmits, defineProps, provide, ref } from 'vue'
+import { cn } from '../../../lib/utils'
 
-const props = defineProps<TabsRootProps>()
-const emits = defineEmits<TabsRootEmits>()
+const props = defineProps({
+  defaultValue: {
+    type: String,
+    default: undefined,
+  },
+  value: {
+    type: String,
+    default: undefined,
+  },
+  class: {
+    type: String,
+    default: '',
+  },
+})
 
-const forwarded: ComputedRef<TabsRootProps> = useForwardPropsEmits(props, emits)
+const emits = defineEmits(['update:value'])
+
+const activeTab = ref(props.value || props.defaultValue)
+const tabRefs = ref(new Map())
+
+// Proporcionar el valor activo y la función para cambiarlo a los componentes hijos
+provide('activeTab', activeTab)
+provide('tabRefs', tabRefs)
+provide('setActiveTab', (value: string) => {
+  activeTab.value = value
+  emits('update:value', value)
+})
 </script>
 
 <template>
-  <TabsRoot v-bind="forwarded">
+  <div :class="cn('', props.class)">
     <slot />
-  </TabsRoot>
+  </div>
 </template>

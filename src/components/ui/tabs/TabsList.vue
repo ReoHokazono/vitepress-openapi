@@ -1,27 +1,29 @@
 <script setup lang="ts">
-import type { TabsListProps } from 'radix-vue'
-import type { HTMLAttributes } from 'vue'
-import { TabsList } from 'radix-vue'
-import { computed } from 'vue'
+import { defineProps, provide, ref } from 'vue'
 import { cn } from '../../../lib/utils'
+import { tabsListVariants } from './index'
 
-const props = defineProps<TabsListProps & { class?: HTMLAttributes['class'] }>()
-
-const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
-
-  return delegated
+const props = defineProps({
+  class: {
+    type: String,
+    default: '',
+  },
+  variant: {
+    type: String,
+    default: 'default',
+  },
 })
+
+const tabsListRef = ref(null)
+provide('tabsListRef', tabsListRef)
 </script>
 
 <template>
-  <TabsList
-    v-bind="delegatedProps"
-    :class="cn(
-      'inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground',
-      props.class,
-    )"
+  <div
+    ref="tabsListRef"
+    role="tablist"
+    :class="cn(tabsListVariants({ variant: props.variant }), props.class)"
   >
     <slot />
-  </TabsList>
+  </div>
 </template>

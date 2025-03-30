@@ -37,8 +37,7 @@ const placeholder = computed(() => {
     <Input
       :value="modelValue"
       type="text"
-      :placeholder="placeholder"
-      class="bg-muted"
+      :placeholder="String(placeholder)"
       @update:model-value="emits('update:modelValue', $event)"
       @keydown.enter="emits('submit')"
     />

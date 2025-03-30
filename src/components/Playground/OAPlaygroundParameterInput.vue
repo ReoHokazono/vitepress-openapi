@@ -3,7 +3,7 @@ import { defineEmits, defineProps, onMounted } from 'vue'
 import { getPropertyExample } from '../../lib/examples/getPropertyExample'
 import { Checkbox } from '../ui/checkbox'
 import { Input } from '../ui/input'
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
+import { Select } from '../ui/select'
 
 const props = defineProps({
   parameter: {
@@ -20,6 +20,11 @@ const emits = defineEmits([
   'update:modelValue',
   'submit',
 ])
+
+const options = props.parameter.schema?.enum?.map((enumValue: any) => ({
+  value: enumValue,
+  label: enumValue,
+}))
 
 function inputType(parameter: any) {
   if (parameter.schema?.type === 'integer') {
@@ -47,36 +52,23 @@ const parameterExample = getPropertyExample(props.parameter)
       :value="modelValue"
       :type="inputType(parameter)"
       :placeholder="String(parameterExample ?? '')"
-      class="bg-muted"
       @update:model-value="emits('update:modelValue', $event)"
       @keydown.enter="emits('submit')"
     />
 
     <Checkbox
       v-if="['boolean'].includes(parameter.schema?.type)"
-      :checked="String(modelValue) === '' ? 'indeterminate' : (modelValue as boolean)"
-      @update:checked="emits('update:modelValue', $event)"
+      :model-value="modelValue === true"
+      @update:model-value="emits('update:modelValue', $event)"
       @keydown.enter="emits('submit')"
     />
 
     <Select
       v-if="parameter.schema?.enum"
+      :model-value="String(modelValue)"
+      :placeholder="String(parameterExample ?? $t('Select...'))"
+      :options="options"
       @update:model-value="emits('update:modelValue', $event)"
-    >
-      <SelectTrigger :aria-label="String(parameterExample ?? $t('Select...'))">
-        <SelectValue :placeholder="String(parameterExample ?? $t('Select...'))" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectGroup>
-          <SelectItem
-            v-for="enumValue in parameter.schema.enum"
-            :key="enumValue"
-            :value="String(enumValue)"
-          >
-            {{ enumValue }}
-          </SelectItem>
-        </SelectGroup>
-      </SelectContent>
-    </Select>
+    />
   </div>
 </template>

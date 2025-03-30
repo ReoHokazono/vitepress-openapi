@@ -13,7 +13,6 @@ const props = defineProps({
   <Badge
     variant="plain"
     :class="[`OAMethodBadge--${props.method.toLowerCase()}`]"
-    class="px-2 py-1 rounded"
   >
     {{ props.method.toUpperCase() }}
   </Badge>

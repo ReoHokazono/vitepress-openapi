@@ -2,7 +2,6 @@
 import { ref } from 'vue'
 import OAMarkdown from '../Common/OAMarkdown.vue'
 import { Badge } from '../ui/badge'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible'
 import OASchemaPropertyAttributes from './OASchemaPropertyAttributes.vue'
 
 const props = defineProps({
@@ -37,12 +36,29 @@ const isObjectOrArray = isObject || isArray || props.property.type === 'object' 
 
 <template>
   <div>
-    <Collapsible
-      v-model:open="isOpen"
-      :disabled="!isObjectOrArray"
+    <div
+      class="daisy-collapse p-0 rounded-none"
+      :class="{
+        'daisy-collapse-open': isOpen,
+        'daisy-collapse-close': !isOpen,
+      }"
     >
-      <CollapsibleTrigger class="w-full">
-        <div class="flex flex-col text-start space-y-1 group select-text cursor-auto">
+      <input
+        v-if="isObjectOrArray"
+        :id="`collapse-${props.property.name}`"
+        type="checkbox"
+        class="allow-select"
+        :checked="isOpen"
+        :aria-label="$t('Expand')"
+        :aria-expanded="isOpen"
+        :aria-controls="`collapse-content-${props.property.name}`"
+        :aria-hidden="!isOpen"
+        :aria-labelledby="`collapse-${props.property.name}`"
+        :aria-describedby="`collapse-description-${props.property.name}`"
+        @change="isOpen = !isOpen"
+      >
+      <div class="daisy-collapse-title p-0">
+        <div class="flex flex-col text-start space-y-1 group">
           <div class="flex flex-row items-center gap-2 text-sm">
             <span
               v-if="props.property.name && props.property.name.trim() !== ''"
@@ -127,8 +143,9 @@ const isObjectOrArray = isObject || isArray || props.property.type === 'object' 
 
           <OASchemaPropertyAttributes v-if="props.property.constraints" :property="props.property.constraints" />
         </div>
-      </CollapsibleTrigger>
-      <CollapsibleContent v-if="isObjectOrArray" class="ml-2 pl-2 border-l border-l-solid">
+      </div>
+
+      <div v-if="isObjectOrArray" class="daisy-collapse-content ml-2 pl-2 pr-0 !pb-0 border-l border-l-solid">
         <Badge
           v-if="props.property.meta?.isOneOf === true"
           variant="outline"
@@ -147,7 +164,7 @@ const isObjectOrArray = isObject || isArray || props.property.type === 'object' 
             :open="subProperty?.meta?.isOneOf === true"
           />
         </div>
-      </CollapsibleContent>
-    </Collapsible>
+      </div>
+    </div>
   </div>
 </template>

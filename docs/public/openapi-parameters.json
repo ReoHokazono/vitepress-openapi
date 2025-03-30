@@ -84,6 +84,17 @@
               "maxLength": 20,
               "pattern": "^[a-zA-Z0-9]+$"
             }
+          },
+          {
+            "name": "select-param",
+            "in": "query",
+            "required": false,
+            "description": "Select parameter for filtering",
+            "schema": {
+              "type": "string",
+              "enum": ["option1", "option2", "option3"],
+              "example": "option1"
+            }
           }
         ],
         "responses": {

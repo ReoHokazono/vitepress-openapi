@@ -5,7 +5,6 @@ import { useTheme } from '../../composables/useTheme'
 import { scrollToHash } from '../../lib/utils'
 import OAHeading from '../Common/OAHeading.vue'
 import { Button } from '../ui/button'
-import { Collapsible, CollapsibleTrigger } from '../ui/collapsible'
 import OAPaths from './OAPaths.vue'
 import OAPathsSummary from './OAPathsSummary.vue'
 
@@ -33,6 +32,10 @@ const hasDescription = computed(() => props.group.description && props.group.des
 
 const isOpen = ref(!themeConfig.getSpecConfig()?.collapsePaths?.value)
 
+const isCollapsible = computed(() => {
+  return showPathsSummary.value || themeConfig.getSpecConfig()?.collapsePaths?.value === true
+})
+
 function onPathClick(hash: string) {
   isOpen.value = true
   nextTick(() => {
@@ -42,7 +45,7 @@ function onPathClick(hash: string) {
 </script>
 
 <template>
-  <Collapsible v-model:open="isOpen">
+  <div>
     <div v-if="props.group.isGrouped">
       <OAHeading level="h1">
         {{ props.group.name }}
@@ -62,32 +65,40 @@ function onPathClick(hash: string) {
           />
         </div>
       </div>
+    </div>
 
-      <div
-        v-if="showPathsSummary || themeConfig.getSpecConfig()?.collapsePaths?.value === true"
-        class="flex justify-center"
+    <div class="daisy-collapse">
+      <input
+        v-if="isCollapsible"
+        type="checkbox" :checked="isOpen" @change="isOpen = !isOpen"
       >
-        <CollapsibleTrigger>
-          <Button>
-            {{ isOpen ? $t('Hide operations') : $t('Show operations') }}
-          </Button>
-        </CollapsibleTrigger>
+      <div
+        v-if="isCollapsible"
+        class="daisy-collapse-title mx-auto p-0"
+      >
+        <Button>
+          {{ isOpen ? $t('Hide operations') : $t('Show operations') }}
+        </Button>
       </div>
 
-      <hr>
+      <div class="daisy-collapse-content space-y-10 p-0">
+        <hr>
+
+        <div
+          v-if="!lazyRendering || isOpen"
+          class="flex flex-col space-y-10"
+          :class="{ hidden: !isOpen }"
+        >
+          <OAPaths :paths="group.paths">
+            <!-- Expose all slots upwards -->
+            <template v-for="(_, name) in slots" #[name]="slotProps">
+              <slot :name="name" v-bind="slotProps || {}" />
+            </template>
+          </OAPaths>
+        </div>
+      </div>
     </div>
 
-    <div
-      v-if="!lazyRendering || isOpen"
-      class="flex flex-col space-y-10"
-      :class="{ hidden: !isOpen }"
-    >
-      <OAPaths :paths="group.paths">
-        <!-- Expose all slots upwards -->
-        <template v-for="(_, name) in slots" #[name]="slotProps">
-          <slot :name="name" v-bind="slotProps || {}" />
-        </template>
-      </OAPaths>
-    </div>
-  </Collapsible>
+    <hr v-if="!isOpen">
+  </div>
 </template>

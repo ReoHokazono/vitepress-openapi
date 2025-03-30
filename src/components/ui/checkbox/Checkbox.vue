@@ -1,33 +1,75 @@
 <script setup lang="ts">
-import type { CheckboxRootEmits, CheckboxRootProps } from 'radix-vue'
-import type { HTMLAttributes } from 'vue'
 import { Check } from 'lucide-vue-next'
-import { CheckboxIndicator, CheckboxRoot, useForwardPropsEmits } from 'radix-vue'
 import { computed } from 'vue'
 import { cn } from '../../../lib/utils'
+import { checkboxClasses } from './index'
 
-const props = defineProps<CheckboxRootProps & { class?: HTMLAttributes['class'] }>()
-const emits = defineEmits<CheckboxRootEmits>()
+interface CheckboxProps {
+  modelValue?: boolean
+  disabled?: boolean
+  required?: boolean
+  name?: string
+  value?: string
+  id?: string
+  class?: string
+}
 
-const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
-
-  return delegated
+const props = withDefaults(defineProps<CheckboxProps>(), {
+  modelValue: false,
+  disabled: false,
+  required: false,
 })
 
-const forwarded = useForwardPropsEmits(delegatedProps, emits)
+const emit = defineEmits<{
+  'update:modelValue': [value: boolean]
+  'change': [event: Event]
+}>()
+
+const isChecked = computed({
+  get: () => props.modelValue,
+  set: value => emit('update:modelValue', value),
+})
+
+const handleChange = (event: Event) => {
+  if (props.disabled) {
+    return
+  }
+
+  const target = event.target as HTMLInputElement
+  isChecked.value = target.checked
+  emit('change', event)
+}
 </script>
 
 <template>
-  <CheckboxRoot
-    v-bind="forwarded"
-    :class="
-      cn('peer h-4 w-4 shrink-0 rounded-sm border border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground data-[state=unchecked]:bg-white data-[state=unchecked]:border-solid data-[state=unchecked]:dark:bg-gray-600', props.class)"
-  >
-    <CheckboxIndicator class="flex h-full w-full items-center justify-center text-current">
-      <slot>
-        <Check class="h-4 w-4" />
-      </slot>
-    </CheckboxIndicator>
-  </CheckboxRoot>
+  <div class="relative inline-flex items-center">
+    <input
+      :id="id"
+      type="checkbox"
+      :name="name"
+      :value="value"
+      :checked="isChecked"
+      :disabled="disabled"
+      :required="required"
+      class="absolute opacity-0 w-0 h-0"
+      @change="handleChange"
+    >
+    <label
+      :for="id"
+      :class="cn(
+        checkboxClasses({ checked: isChecked }),
+        props.class,
+      )"
+      @click="!disabled && (isChecked = !isChecked)"
+    >
+      <span
+        v-if="isChecked"
+        class="flex h-full w-full items-center justify-center text-current"
+      >
+        <slot>
+          <Check class="h-4 w-4" />
+        </slot>
+      </span>
+    </label>
+  </div>
 </template>
